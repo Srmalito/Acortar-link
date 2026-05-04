@@ -1,0 +1,5 @@
+# Redirige /r/CODIGO → TinyURL → destino final (funciona desde cualquier dispositivo)
+/r/* https://tinyurl.com/:splat 301
+
+# SPA fallback para React
+/* /index.html 200

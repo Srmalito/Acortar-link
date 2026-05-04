@@ -48,16 +48,20 @@ function getPlatform(url) {
   return found || { name: getDomain(url), color: '#8b5cf6', emoji: '🔗' }
 }
 
-// Calls TinyURL API (CORS-friendly, works from the browser)
+// Calls TinyURL API and returns a branded URL using our own domain (/r/CODE)
 async function createShortUrl(originalUrl) {
   const apiUrl = `https://tinyurl.com/api-create.php?url=${encodeURIComponent(originalUrl)}`
   const res = await fetch(apiUrl)
   if (!res.ok) throw new Error('Error al conectar con TinyURL')
-  const text = await res.text()
-  if (text.startsWith('https://tinyurl.com/') || text.startsWith('http://tinyurl.com/')) {
-    return text.trim()
+  const text = await res.text().then(t => t.trim())
+  if (!text.startsWith('https://tinyurl.com/') && !text.startsWith('http://tinyurl.com/')) {
+    throw new Error('No se pudo acortar el enlace. Intenta de nuevo.')
   }
-  throw new Error('No se pudo acortar el enlace. Intenta de nuevo.')
+  // Extract short code, e.g. '24osxy3n' from 'https://tinyurl.com/24osxy3n'
+  const code = text.replace(/https?:\/\/tinyurl\.com\//, '')
+  // Build branded URL: acortarlink2026.netlify.app/r/24osxy3n
+  const brandedUrl = `${window.location.origin}/r/${code}`
+  return brandedUrl
 }
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
