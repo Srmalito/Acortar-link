@@ -27,6 +27,27 @@ function truncateUrl(url, max = 50) {
   return url.length > max ? url.slice(0, max) + '…' : url
 }
 
+// Detects the platform from the URL and returns name + brand color
+function getPlatform(url) {
+  const domain = getDomain(url).toLowerCase()
+  const platforms = [
+    { match: ['facebook.com', 'fb.com', 'fb.watch'],  name: 'Facebook',   color: '#1877F2', emoji: '📘' },
+    { match: ['instagram.com'],                        name: 'Instagram',  color: '#E1306C', emoji: '📸' },
+    { match: ['youtube.com', 'youtu.be'],              name: 'YouTube',    color: '#FF0000', emoji: '▶️' },
+    { match: ['tiktok.com'],                           name: 'TikTok',     color: '#010101', emoji: '🎵' },
+    { match: ['twitter.com', 'x.com'],                 name: 'X / Twitter', color: '#1DA1F2', emoji: '🐦' },
+    { match: ['whatsapp.com', 'wa.me'],                name: 'WhatsApp',   color: '#25D366', emoji: '💬' },
+    { match: ['linkedin.com'],                         name: 'LinkedIn',   color: '#0A66C2', emoji: '💼' },
+    { match: ['spotify.com'],                          name: 'Spotify',    color: '#1DB954', emoji: '🎧' },
+    { match: ['amazon.com', 'amzn.to'],                name: 'Amazon',     color: '#FF9900', emoji: '🛒' },
+    { match: ['netflix.com'],                          name: 'Netflix',    color: '#E50914', emoji: '🎬' },
+    { match: ['github.com'],                           name: 'GitHub',     color: '#6e5494', emoji: '💻' },
+    { match: ['maps.google.com', 'goo.gl', 'maps.app.goo.gl'], name: 'Google Maps', color: '#4285F4', emoji: '📍' },
+  ]
+  const found = platforms.find(p => p.match.some(m => domain.includes(m)))
+  return found || { name: getDomain(url), color: '#8b5cf6', emoji: '🔗' }
+}
+
 // Calls TinyURL API (CORS-friendly, works from the browser)
 async function createShortUrl(originalUrl) {
   const apiUrl = `https://tinyurl.com/api-create.php?url=${encodeURIComponent(originalUrl)}`
@@ -89,20 +110,16 @@ function Toast({ message, type, onClose }) {
 function LinkCard({ link, onCopy, onDelete, copiedId }) {
   const [showQr, setShowQr] = useState(false)
   const isCopied = copiedId === link.id
+  const platform = getPlatform(link.originalUrl)
 
   return (
     <div className="link-card">
       <div className="link-card-header">
-        <div className="link-favicon">
-          <img
-            src={`https://www.google.com/s2/favicons?sz=32&domain=${getDomain(link.originalUrl)}`}
-            alt=""
-            onError={e => { e.target.style.display = 'none' }}
-          />
-          <Icon name="globe" size={14} />
+        <div className="link-platform-badge" style={{ background: platform.color + '22', border: `1px solid ${platform.color}55` }}>
+          <span className="platform-emoji">{platform.emoji}</span>
+          <span className="platform-name" style={{ color: platform.color }}>{platform.name}</span>
         </div>
-        <div className="link-info">
-          <span className="link-domain">{getDomain(link.originalUrl)}</span>
+        <div className="link-info" style={{ flex: 1 }}>
           <span className="link-date">{formatDate(link.createdAt)}</span>
         </div>
         <div className="link-clicks">

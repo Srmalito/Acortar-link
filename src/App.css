@@ -510,36 +510,31 @@
   gap: 10px;
   margin-bottom: 10px;
 }
-.link-favicon {
-  width: 32px; height: 32px;
-  background: rgba(255,255,255,0.06);
-  border-radius: 8px;
-  display: grid;
-  place-items: center;
+
+/* Platform badge — shows Facebook, YouTube, Instagram, etc. */
+.link-platform-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 100px;
+  padding: 5px 12px;
   flex-shrink: 0;
-  color: var(--text-muted);
-  overflow: hidden;
-  position: relative;
 }
-.link-favicon img {
-  position: absolute;
-  width: 20px; height: 20px;
-  object-fit: contain;
+.platform-emoji {
+  font-size: 0.95rem;
+  line-height: 1;
 }
+.platform-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .link-info {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 2px;
   min-width: 0;
-}
-.link-domain {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .link-date {
   font-size: 0.7rem;
