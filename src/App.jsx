@@ -27,17 +27,16 @@ function truncateUrl(url, max = 50) {
   return url.length > max ? url.slice(0, max) + '…' : url
 }
 
-// Calls is.gd API to get a real short URL (works on any device/phone)
-async function createShortUrl(originalUrl, customAlias = '') {
-  let apiUrl = `https://is.gd/create.php?format=simple&url=${encodeURIComponent(originalUrl)}`
-  if (customAlias) apiUrl += `&shorturl=${encodeURIComponent(customAlias)}`
+// Calls TinyURL API (CORS-friendly, works from the browser)
+async function createShortUrl(originalUrl) {
+  const apiUrl = `https://tinyurl.com/api-create.php?url=${encodeURIComponent(originalUrl)}`
   const res = await fetch(apiUrl)
+  if (!res.ok) throw new Error('Error al conectar con TinyURL')
   const text = await res.text()
-  if (text.startsWith('https://is.gd/') || text.startsWith('http://is.gd/')) {
+  if (text.startsWith('https://tinyurl.com/') || text.startsWith('http://tinyurl.com/')) {
     return text.trim()
   }
-  // is.gd returns error messages starting with "Error:"
-  throw new Error(text.replace('Error: ', '') || 'No se pudo acortar el enlace')
+  throw new Error('No se pudo acortar el enlace. Intenta de nuevo.')
 }
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
@@ -201,7 +200,6 @@ export default function App() {
   })
   const [url, setUrl] = useState('')
   const [label, setLabel] = useState('')
-  const [customAlias, setCustomAlias] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [copiedId, setCopiedId] = useState(null)
@@ -232,7 +230,7 @@ export default function App() {
 
     setLoading(true)
     try {
-      const shortUrl = await createShortUrl(finalUrl, customAlias.trim())
+      const shortUrl = await createShortUrl(finalUrl)
 
       const newLink = {
         id: Date.now().toString(),
@@ -247,7 +245,6 @@ export default function App() {
       setLastCreated(newLink)
       setUrl('')
       setLabel('')
-      setCustomAlias('')
       setShowAdvanced(false)
       showToast('¡Enlace acortado con éxito!')
     } catch (err) {
@@ -360,29 +357,16 @@ export default function App() {
             </div>
 
             {showAdvanced && (
-              <div className="form-advanced">
+              <div className="form-advanced" style={{ gridTemplateColumns: '1fr' }}>
                 <div className="advanced-field">
-                  <label htmlFor="label-input">Etiqueta (opcional)</label>
+                  <label htmlFor="label-input">Etiqueta descriptiva (opcional)</label>
                   <input
                     id="label-input"
                     type="text"
-                    placeholder="Ej: Post de Instagram, Video YouTube..."
+                    placeholder="Ej: Post de Instagram, Video YouTube, Producto..."
                     value={label}
                     onChange={e => setLabel(e.target.value)}
                     maxLength={60}
-                  />
-                </div>
-                <div className="advanced-field">
-                  <label htmlFor="alias-input">
-                    Alias personalizado
-                    <span className="field-hint"> — is.gd/<strong>{customAlias || 'mi-link'}</strong></span>
-                  </label>
-                  <input
-                    id="alias-input"
-                    type="text"
-                    placeholder="mi-link"
-                    value={customAlias}
-                    onChange={e => setCustomAlias(e.target.value.replace(/[^a-zA-Z0-9\-_]/g, '').slice(0, 30))}
                   />
                 </div>
               </div>
@@ -465,7 +449,7 @@ export default function App() {
       </main>
 
       <footer className="footer">
-        <p>LinkSnap · Potenciado por is.gd · Los datos se guardan en tu navegador</p>
+        <p>LinkSnap · Potenciado por TinyURL · Los datos se guardan en tu navegador</p>
       </footer>
 
       {toast && (
