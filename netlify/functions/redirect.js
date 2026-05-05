@@ -1,8 +1,12 @@
-// Netlify Function (ESM): resuelve TinyURL en servidor y redirige directo al destino.
+// Netlify Function (ESM): lee el código desde el path de la URL
+// /r/23lbfnqg → event.path = '/r/23lbfnqg' → code = '23lbfnqg'
 
 export const handler = async (event) => {
-  const code = event.queryStringParameters?.code
-  if (!code) {
+  // Extraer el código desde la ruta: /r/23lbfnqg → '23lbfnqg'
+  const pathParts = (event.path || '').split('/')
+  const code = pathParts[pathParts.length - 1]
+
+  if (!code || code === 'redirect') {
     return { statusCode: 400, body: 'Código no proporcionado' }
   }
 
