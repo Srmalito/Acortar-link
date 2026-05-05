@@ -1,5 +1,5 @@
-# Redirige /r/CODIGO → TinyURL → destino final (funciona desde cualquier dispositivo)
-/r/* https://tinyurl.com/:splat 301
+# /r/CODIGO → Netlify Function (resuelve TinyURL y redirige directo al destino)
+/r/* /.netlify/functions/redirect?code=:splat 200
 
 # SPA fallback para React
 /* /index.html 200
