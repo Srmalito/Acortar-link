@@ -1,14 +1,13 @@
-// Netlify Function: resuelve el código de TinyURL en el servidor
-// y redirige directamente a la URL original sin pasar por la página de TinyURL.
+// Netlify Function (ESM): resuelve TinyURL en servidor y redirige directo al destino.
 
-exports.handler = async (event) => {
+export const handler = async (event) => {
   const code = event.queryStringParameters?.code
   if (!code) {
     return { statusCode: 400, body: 'Código no proporcionado' }
   }
 
   try {
-    // Fetch a TinyURL sin seguir el redirect (manual), para capturar el Location header
+    // Fetch sin seguir el redirect para capturar el Location header de TinyURL
     const res = await fetch(`https://tinyurl.com/${code}`, {
       redirect: 'manual',
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; LinkSnap/1.0)' }
@@ -28,13 +27,13 @@ exports.handler = async (event) => {
       }
     }
 
-    // Fallback: si no hay Location header, ir a TinyURL directamente
+    // Fallback: ir a TinyURL si no hay Location header
     return {
       statusCode: 302,
       headers: { Location: `https://tinyurl.com/${code}` },
       body: ''
     }
-  } catch (err) {
+  } catch (_err) {
     return {
       statusCode: 302,
       headers: { Location: `https://tinyurl.com/${code}` },
