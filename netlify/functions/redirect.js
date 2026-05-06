@@ -1,50 +1,45 @@
-// Netlify Function: extrae el código del path (sin prefijo /r/)
-// acortarlink2026.netlify.app/2cp9nnvo → code = '2cp9nnvo' → Facebook/YouTube/etc.
+// Netlify Function: lee la URL desde Firebase y redirige directamente.
+// Código de 4 chars (ej: Ab3x) → Firebase → URL original → redirect 301
 
 export const handler = async (event) => {
-  // Extraer código del path: '/2cp9nnvo' → '2cp9nnvo'
   const code = (event.path || '').replace(/^\//, '').split('/')[0]
 
-  // Si no hay código o está vacío, el archivo estático maneja la raíz
+  // Sin código → redirigir al app
   if (!code) {
-    return {
-      statusCode: 302,
-      headers: { Location: '/' },
-      body: ''
-    }
+    return { statusCode: 302, headers: { Location: '/' }, body: '' }
+  }
+
+  const FIREBASE_URL = process.env.FIREBASE_URL
+  if (!FIREBASE_URL) {
+    return { statusCode: 500, body: 'Firebase no configurado en el servidor.' }
   }
 
   try {
-    // Resolver TinyURL en el servidor (sin mostrar su página)
-    const res = await fetch(`https://tinyurl.com/${code}`, {
-      redirect: 'manual',
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; LinkSnap/1.0)' }
-    })
+    const res = await fetch(`${FIREBASE_URL}/links/${code}.json`)
+    const data = await res.json()
 
-    const location = res.headers.get('location')
-
-    if (location) {
-      // Redirigir directo al destino real
+    if (data && data.url) {
+      // Redirigir directo al destino (Facebook, YouTube, etc.)
       return {
         statusCode: 301,
         headers: {
-          Location: location,
+          Location: data.url,
           'Cache-Control': 'public, max-age=300'
         },
         body: ''
       }
     }
 
-    // Fallback a TinyURL
+    // Código no encontrado → volver al app
     return {
       statusCode: 302,
-      headers: { Location: `https://tinyurl.com/${code}` },
+      headers: { Location: '/' },
       body: ''
     }
   } catch (_err) {
     return {
       statusCode: 302,
-      headers: { Location: `https://tinyurl.com/${code}` },
+      headers: { Location: '/' },
       body: ''
     }
   }

@@ -48,21 +48,39 @@ function getPlatform(url) {
   return found || { name: getDomain(url), color: '#8b5cf6', emoji: '🔗' }
 }
 
-// Calls TinyURL API and returns a branded URL using our own domain (/CODE)
-async function createShortUrl(originalUrl) {
-  const apiUrl = `https://tinyurl.com/api-create.php?url=${encodeURIComponent(originalUrl)}`
-  const res = await fetch(apiUrl)
-  if (!res.ok) throw new Error('Error al conectar con TinyURL')
-  const text = await res.text().then(t => t.trim())
-  if (!text.startsWith('https://tinyurl.com/') && !text.startsWith('http://tinyurl.com/')) {
-    throw new Error('No se pudo acortar el enlace. Intenta de nuevo.')
-  }
-  // Extract short code, e.g. '24osxy3n' from 'https://tinyurl.com/24osxy3n'
-  const code = text.replace(/https?:\/\/tinyurl\.com\//, '')
-  // Build branded URL without /r/ prefix: acortarlink2026.netlify.app/24osxy3n
-  const brandedUrl = `${window.location.origin}/${code}`
-  return brandedUrl
+// ─── Firebase config ─────────────────────────────────────────────────────────
+// Set VITE_FIREBASE_URL in Netlify environment variables
+const FIREBASE_URL = import.meta.env.VITE_FIREBASE_URL || ''
+
+// Generates a random N-char alphanumeric code
+function generateCode(length = 4) {
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
 }
+
+// Creates a short link using Firebase as DB (4-char codes, no TinyURL)
+async function createShortUrl(originalUrl) {
+  if (!FIREBASE_URL) throw new Error('Firebase no configurado. Agrega VITE_FIREBASE_URL en Netlify.')
+
+  // Try up to 5 times to find a unique code
+  for (let i = 0; i < 5; i++) {
+    const code = generateCode(4)
+    const checkRes = await fetch(`${FIREBASE_URL}/links/${code}.json`)
+    const existing = await checkRes.json()
+
+    if (!existing) {
+      // Code is free — store it
+      await fetch(`${FIREBASE_URL}/links/${code}.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: originalUrl, createdAt: new Date().toISOString() })
+      })
+      return `${window.location.origin}/${code}`
+    }
+  }
+  throw new Error('No se pudo generar un código único. Intenta de nuevo.')
+}
+
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
