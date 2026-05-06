@@ -1,5 +1,3 @@
-# /r/CODIGO → Netlify Function que lee el código desde el path
-/r/* /.netlify/functions/redirect 200
-
-# SPA fallback para React
-/* /index.html 200
+# Netlify sirve archivos estáticos primero (/, /assets/*, etc.)
+# Esta regla solo aplica a rutas que NO tienen archivo estático → short codes
+/* /.netlify/functions/redirect 200

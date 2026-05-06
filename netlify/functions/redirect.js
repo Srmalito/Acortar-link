@@ -1,17 +1,21 @@
-// Netlify Function (ESM): lee el código desde el path de la URL
-// /r/23lbfnqg → event.path = '/r/23lbfnqg' → code = '23lbfnqg'
+// Netlify Function: extrae el código del path (sin prefijo /r/)
+// acortarlink2026.netlify.app/2cp9nnvo → code = '2cp9nnvo' → Facebook/YouTube/etc.
 
 export const handler = async (event) => {
-  // Extraer el código desde la ruta: /r/23lbfnqg → '23lbfnqg'
-  const pathParts = (event.path || '').split('/')
-  const code = pathParts[pathParts.length - 1]
+  // Extraer código del path: '/2cp9nnvo' → '2cp9nnvo'
+  const code = (event.path || '').replace(/^\//, '').split('/')[0]
 
-  if (!code || code === 'redirect') {
-    return { statusCode: 400, body: 'Código no proporcionado' }
+  // Si no hay código o está vacío, el archivo estático maneja la raíz
+  if (!code) {
+    return {
+      statusCode: 302,
+      headers: { Location: '/' },
+      body: ''
+    }
   }
 
   try {
-    // Fetch sin seguir el redirect para capturar el Location header de TinyURL
+    // Resolver TinyURL en el servidor (sin mostrar su página)
     const res = await fetch(`https://tinyurl.com/${code}`, {
       redirect: 'manual',
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; LinkSnap/1.0)' }
@@ -20,7 +24,7 @@ export const handler = async (event) => {
     const location = res.headers.get('location')
 
     if (location) {
-      // Redirigir directamente al destino real (Facebook, YouTube, etc.)
+      // Redirigir directo al destino real
       return {
         statusCode: 301,
         headers: {
@@ -31,7 +35,7 @@ export const handler = async (event) => {
       }
     }
 
-    // Fallback: ir a TinyURL si no hay Location header
+    // Fallback a TinyURL
     return {
       statusCode: 302,
       headers: { Location: `https://tinyurl.com/${code}` },

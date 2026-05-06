@@ -48,7 +48,7 @@ function getPlatform(url) {
   return found || { name: getDomain(url), color: '#8b5cf6', emoji: '🔗' }
 }
 
-// Calls TinyURL API and returns a branded URL using our own domain (/r/CODE)
+// Calls TinyURL API and returns a branded URL using our own domain (/CODE)
 async function createShortUrl(originalUrl) {
   const apiUrl = `https://tinyurl.com/api-create.php?url=${encodeURIComponent(originalUrl)}`
   const res = await fetch(apiUrl)
@@ -59,8 +59,8 @@ async function createShortUrl(originalUrl) {
   }
   // Extract short code, e.g. '24osxy3n' from 'https://tinyurl.com/24osxy3n'
   const code = text.replace(/https?:\/\/tinyurl\.com\//, '')
-  // Build branded URL: acortarlink2026.netlify.app/r/24osxy3n
-  const brandedUrl = `${window.location.origin}/r/${code}`
+  // Build branded URL without /r/ prefix: acortarlink2026.netlify.app/24osxy3n
+  const brandedUrl = `${window.location.origin}/${code}`
   return brandedUrl
 }
 
