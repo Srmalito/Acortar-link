@@ -1,0 +1,22 @@
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "query",
+          "key": "code"
+        }
+      ],
+      "destination": "/index.html"
+    },
+    {
+      "source": "/:code",
+      "destination": "/api/redirect?code=:code"
+    }
+  ],
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
