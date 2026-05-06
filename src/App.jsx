@@ -488,7 +488,7 @@ export default function App() {
       </main>
 
       <footer className="footer">
-        <p>LinkSnap · Potenciado por TinyURL · Los datos se guardan en tu navegador</p>
+        <p>LinkSnap · Desarrollado por Luis Romero · Potenciado por Firebase</p>
       </footer>
 
       {toast && (
