@@ -1,7 +1,12 @@
 {
   "rewrites": [
-    { "source": "/assets/(.*)", "destination": "/assets/$1" },
-    { "source": "/:code([a-zA-Z0-9]{4})", "destination": "/api/redirect" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/:code([a-zA-Z0-9]{4})",
+      "destination": "/api/redirect?code=:code"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 }
